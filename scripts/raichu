@@ -28,17 +28,23 @@ def getargs():
                         'all chromosome data.')
     parser.add_argument('--window-size', default=200, type=int,
                         help='''The window size in the unit of pixels.''')
-    parser.add_argument('--ignore-diags', default=1, type=int,
+    parser.add_argument('--ignore-diags', default=0, type=int,
                         help='''Number of diagonals of the contact matrix to ignore.
                         Examples: 0 ignores nothing, 1 ignores the main diagonal, and 2
                         ignores diagonals (-1, 0, 1), etc.''')
-    parser.add_argument('--min-nnz', default=5, type=int, 
+    parser.add_argument('--min-nnz', default=10, type=int, 
                         help='''Ignore bins with less than this number of non-zero data points
                         on corresponding intra-chromosomal matrices.''')
     parser.add_argument('--maxiter', default=100, type=int,
                         help='''The maximum number of global search iterations for dual annealing.''')
+    parser.add_argument('--lower-bound', default=1e-3, type=float,
+                        help='''Lower bound value of the search space.''')
+    parser.add_argument('--upper-bound', default=1e3, type=float,
+                        help='''Upper bound value of the search space.''')
     parser.add_argument('-p', '--nproc', default=1, type=int,
-                        help='The number of processes to be allocated.')
+                        help='Number of processes to be allocated.')
+    parser.add_argument('-t', '--threads', default=2, type=int,
+                        help='Number of threads.')
     parser.add_argument('-n', '--name', default='obj_weight',
                         help='''Name of the column to write to.''')
     parser.add_argument('-f', '--force', action = 'store_true',
@@ -86,8 +92,11 @@ def run():
                    '# Window Size = {0}'.format(args.window_size),
                    '# Number of Diagonals to Ignore = {0}'.format(args.ignore_diags),
                    '# Maximum Iter = {0}'.format(args.maxiter),
+                   '# Lower Bound = {0}'.format(args.lower_bound),
+                   '# Upper Bound = {0}'.format(args.upper_bound),
                    '# Column Name = {0}'.format(args.name),
                    '# Number of Processes = {0}'.format(args.nproc),
+                   '# Number of Threads = {0}'.format(args.threads),
                    '# Log File Name = {0}'.format(args.logFile)
                    ]
         argtxt = '\n'.join(arglist)
@@ -95,8 +104,11 @@ def run():
 
         import cooler
         import numpy as np
+        from raichu import util
         from raichu.util import pipeline, calculate_expected, write_weights
         from joblib import Parallel, delayed
+
+        #util.numba.set_num_threads(args.threads)
         
         try:
             # input params
@@ -107,6 +119,9 @@ def run():
             nproc = args.nproc
             ndiag = args.ignore_diags
             min_nnz = args.min_nnz
+            n_threads = args.threads
+            lb = np.log10(args.lower_bound)
+            ub = np.log10(args.upper_bound)
 
             # prepare for the calculation
             cool_path, group_path = cooler.util.parse_cooler_uri(cool_uri)
@@ -127,7 +142,7 @@ def run():
                 logger.info('Optimizing the bias vector using dual annealing ...')
                 queue = []
                 for c in chroms:
-                    queue.append((clr, c, Ed, ws_bin, ndiag, maxiter, min_nnz, args.logFile))
+                    queue.append((clr, c, Ed, ws_bin, ndiag, lb, ub, maxiter, min_nnz, n_threads))
                 collect = Parallel(n_jobs=nproc)(delayed(pipeline)(*i) for i in queue)
                 for weights, indices in collect:
                     bias[indices] = 1 / (10 ** weights)

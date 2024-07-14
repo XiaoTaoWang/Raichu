@@ -16,18 +16,18 @@ def eval_func(weights, *args):
 
     return obj
 
-def optimize_by_dual_annealing(ini_weights, data, coords, Earr, maxiter):
+def optimize_by_dual_annealing(ini_weights, data, coords, Earr, lb, ub, maxiter):
 
     # data and coords are returned by "extract_valid_pixels"
-    lw = [-5] * ini_weights.size
-    up = [5] * ini_weights.size
+    lw = [lb] * ini_weights.size
+    up = [ub] * ini_weights.size
     
     # optimize the weights using dual annealing
     ret = dual_annealing(
         eval_func,
         bounds=list(zip(lw, up)),
         args=(data, coords, Earr),
-        maxiter=100,
+        maxiter=maxiter,
         seed=42,
         x0=ini_weights,
         no_local_search=False,
@@ -52,9 +52,10 @@ def calculate_expected_core(clr, c, max_dis):
             valid = valid_cols
         else:
             valid = valid_cols[:-i] * valid_cols[i:]
-            diag = M.diagonal(i)[valid]
-            if diag.size > 0:
-                expected[i] = [diag.sum(), diag.size]
+            
+        diag = M.diagonal(i)[valid]
+        if diag.size > 0:
+            expected[i] = [diag.sum(), diag.size]
     
     return expected
 
@@ -99,8 +100,8 @@ def initialize_weights(M):
     logNzMarg = np.log(marg[marg>0])
     med_logNzMarg = np.median(logNzMarg)
     dev_logNzMarg = cooler.balance.mad(logNzMarg)
-    # MAD-max filter similar to cooler.balance, but with a much looser cutoff value
-    cutoff = np.exp(med_logNzMarg - 30 * dev_logNzMarg)
+    # MAD-max filter similar to cooler.balance
+    cutoff = np.exp(med_logNzMarg - 5 * dev_logNzMarg)
     marg[marg<cutoff] = 0
 
     scale = marg[marg>0].mean()
@@ -151,14 +152,15 @@ def extract_valid_pixels(M, Ed, valid_cols, start_diag=0, top_per=99, bottom_per
 
     return coords, data
 
-def pipeline(clr, chrom, Ed, ws_bin, ndiag, maxiter, min_nnz, logfil):
+def pipeline(clr, chrom, Ed, ws_bin, ndiag, lb, ub, maxiter, min_nnz, n_threads):
 
     # clr: Cooler
     # chrom: chromosome name
     # Ed: the average contact frequency at each genomic distance
     # ws_bin: window size in the unit of pixels
     # maxiter: the maximum number of global search iterations for dual annealing
-    logger = start_logger(logfil)
+    numba.set_num_threads(n_threads)
+    logger = logging.getLogger()
     M = clr.matrix(balance=False, sparse=True).fetch(chrom).tocsr()
     indices = clr.bins().fetch(chrom).index.values
     ini_weights, valid_cols = initialize_weights(M)
@@ -175,7 +177,7 @@ def pipeline(clr, chrom, Ed, ws_bin, ndiag, maxiter, min_nnz, logfil):
         mask = (coords[:,0] >= s) & (coords[:,1] < e)
         rl = e - s
         if mask.sum() / ((rl**2 - rl) // 2) < 0.05:
-            # skip regions with few data points
+            # skip regions with very few data points
             weights_ = ini_weights_.copy() * np.nan
             collect[(s, e)] = [weights_, None]
             continue
@@ -183,7 +185,8 @@ def pipeline(clr, chrom, Ed, ws_bin, ndiag, maxiter, min_nnz, logfil):
         data_ = data[mask]
         Earr_ = np.array([Ed[i[1]-i[0]] for i in coords_], dtype=np.float64)
         #obj_ini = eval_func(ini_weights_, data_, coords_, Earr_)
-        weights_, ret = optimize_by_dual_annealing(ini_weights_, data_, coords_, Earr_, maxiter)
+        weights_, ret = optimize_by_dual_annealing(ini_weights_, data_, coords_, Earr_,
+                                                   lb, ub, maxiter)
         collect[(s, e)] = [weights_, ret]
         #elapse = time.time() - time_start
         #print('{0}s elapsed, eval func {1} -> {2}'.format(elapse, obj_ini, ret.fun))
