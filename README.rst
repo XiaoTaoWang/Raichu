@@ -42,5 +42,5 @@ Downstream Analysis with Raichu-Normalized Matrices
 Performance
 ===========
 
-.. image:: ./images/fig1.png
+.. image:: ./images/performance.png
         :align: center
