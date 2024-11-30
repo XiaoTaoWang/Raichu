@@ -105,7 +105,7 @@ def initialize_weights(M):
     marg[marg<cutoff] = 0
 
     scale = marg[marg>0].mean()
-    weights = marg / scale
+    weights = np.sqrt(marg / scale)
     weights = weights.astype(np.float64)
     valid_cols = weights > 0
 

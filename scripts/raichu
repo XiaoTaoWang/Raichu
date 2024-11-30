@@ -37,11 +37,11 @@ def getargs():
                         on corresponding intra-chromosomal matrices.''')
     parser.add_argument('--maxiter', default=100, type=int,
                         help='''The maximum number of global search iterations for dual annealing.''')
-    parser.add_argument('--lower-bound', default=1e-3, type=float,
+    parser.add_argument('--lower-bound', default=0.001, type=float,
                         help='''Lower bound value of the search space.''')
-    parser.add_argument('--upper-bound', default=1e3, type=float,
+    parser.add_argument('--upper-bound', default=1000, type=float,
                         help='''Upper bound value of the search space.''')
-    parser.add_argument('-p', '--nproc', default=1, type=int,
+    parser.add_argument('-p', '--nproc', default=4, type=int,
                         help='Number of processes to be allocated.')
     parser.add_argument('-t', '--threads', default=2, type=int,
                         help='Number of threads.')
