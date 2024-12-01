@@ -56,15 +56,19 @@ cooler file (usually suffixed with ".mcool"), the value should be the file path
 followed by ``::`` followed by the internal group path to the root of a data
 collection, such as "test.mcool::resolutions/10000", "test.mcool::resolutions/5000",
 etc.
+
 - The parameter "--window-size" specifies the sliding window size, which
 can be set to the default value 200 for most cases, increasing its value may
 get more accurate calculation of the bias vectors with a cost of more running time.
+
 - The parameter "-p" or "--nproc" determines how many processes to be allocated
 to perform the calculation. Based this parameter, Raichu performs the calculation
 for chromosomes in parallel. So setting this parameter to a value greater than
 the number of chromosomes won't get additional speed improvement.
+
 - The parameter "-n" or "--name" specifies the name of the column to write
 the calculated bias vectors.
+
 - If the parameter "-f" or "--force" is specified, the target column
 in the bin table will be overwritten if it already exists.
 
