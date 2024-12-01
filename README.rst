@@ -49,54 +49,52 @@ Now all that is needed is to execute the commands below in a terminal::
 
 Here:
 
-1. The parameter "--cool-uri" specifies the URI of contact matrices at
-a certain resolutions. The value should be the file path for a single-resolution
-cooler file (usually suffixed with ".cool"), and for a multi-resolution
-cooler file (usually suffixed with ".mcool"), the value should be the file path
-followed by ``::`` followed by the internal group path to the root of a data
-collection, such as "test.mcool::resolutions/10000", "test.mcool::resolutions/5000",
-etc.
+1. The ``--cool-uri`` parameter specifies the URI of contact matrices at
+a specific resolution. For a single-resolution cooler file (typically suffixed
+with .cool), the value should be the file path. For a multi-resolution cooler
+file (typically suffixed with .mcool), the value should include the file path
+followed by ``::`` and the internal group path to the root of a data collection.
+For example: ``test.mcool::resolutions/10000`` or ``test.mcool::resolutions/5000``.
 
-2. The parameter "--window-size" specifies the sliding window size, which
-can be set to the default value 200 for most cases, increasing its value may
-get more accurate calculation of the bias vectors with a cost of more running time.
+2. The ``--window-size`` parameter specifies the size of the sliding window. In most
+cases, the default value of 200 is sufficient. Increasing the window size may
+improve the accuracy of bias vector calculations but will also increase the runtime.
 
-3. The parameter "-p" or "--nproc" determines how many processes to be allocated
-to perform the calculation. Based this parameter, Raichu performs the calculation
-for chromosomes in parallel. So setting this parameter to a value greater than
-the number of chromosomes won't get additional speed improvement.
+3. The ``-p`` or ``--nproc`` parameter specifies the number of processes to allocate for
+the calculation. Raichu uses this parameter to perform calculations for chromosomes
+in parallel. However, setting this parameter to a value greater than the number of
+chromosomes will not result in additional speed improvements.
 
-4. The parameter "-n" or "--name" specifies the name of the column to write
-the calculated bias vectors.
+4. The ``-n`` or ``--name`` parameter specifies the name of the column where the
+calculated bias vectors will be written.
 
-5. If the parameter "-f" or "--force" is specified, the target column
-in the bin table will be overwritten if it already exists.
+5. If the ``-f`` or ``--force`` parameter is specified, the target column in the
+bin table will be overwritten if it already exists.
 
 
 Downstream Analysis with Raichu-Normalized Matrices
 ===================================================
-Raichu stores the calculated bias vectors exactly the same way as
+Raichu stores the calculated bias vectors in the same format as
 ``cooler balance`` (an implementation of the ICE algorithm), ensuring
 seamless compability with downstream tools for analyzing compartments,
 TADs, and loops.
 
-For example, to compute the chromatin compartment values based on the
-Raichu-normalized signals, we can run the
-`cooltools eigs-cis  <https://github.com/open2c/cooltools>`_ command by
-specifying the ``--clr-weight-name`` parameter to "obj_weight" (based on
-your ``-n`` setting when you ran raichu). The full command should look like
-this::
+For instance, to compute chromatin compartment values based on Raichu-normalized
+signals, we can use the `cooltools eigs-cis  <https://github.com/open2c/cooltools>`_
+command and specify the ``--clr-weight-name`` parameter as "obj_weight" (matching
+the ``-n`` parameter setting we used when running Raichu). The full command would
+look like this::
 
     $ cooltools eigs-cis --phasing-track hg38-gene-density-100K.bedGraph --clr-weight-name obj_weight -o GM_raichu GM12878-MboI-allReps-hg38.mcool::resolutions/100000
 
-Similarly, the following command can be used to compute insulation scores
-using the Raichu-normalized signals::
+Similarly, we can use the following command to compute insulation scores with
+Raichu-normalized signals::
 
     $ cooltools insulation --ignore-diags 1 -p 8 -o GM_raichu.IS.25kb.tsv --clr-weight-name obj_weight GM12878-MboI-allReps-hg38.mcool::resolutions/25000 1000000
 
 For loop detection, numerous methods can be selected. We have tested
 the `pyHICCUPS <https://github.com/XiaoTaoWang/HiCPeaks>`_, `Mustache <https://github.com/ay-lab/mustache>`_,
-and `Peakachu <https://github.com/tariks/peakachu>` software.
+and `Peakachu <https://github.com/tariks/peakachu>`_ software.
 
 Here is an example command using pyHICCUPS (v0.3.8)::
 
