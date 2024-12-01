@@ -92,35 +92,33 @@ Raichu-normalized signals::
 
     $ cooltools insulation --ignore-diags 1 -p 8 -o GM_raichu.IS.25kb.tsv --clr-weight-name obj_weight GM12878-MboI-allReps-hg38.mcool::resolutions/25000 1000000
 
-For loop detection, numerous methods can be selected. We have tested
-the `pyHICCUPS <https://github.com/XiaoTaoWang/HiCPeaks>`_, `Mustache <https://github.com/ay-lab/mustache>`_,
-and `Peakachu <https://github.com/tariks/peakachu>`_ software.
+For loop detection, we have tested the `pyHICCUPS <https://github.com/XiaoTaoWang/HiCPeaks>`_,
+`Mustache <https://github.com/ay-lab/mustache>`_, and `Peakachu <https://github.com/tariks/peakachu>`_
+software.
 
-Here is an example command using pyHICCUPS (v0.3.8)::
+Here is an example command for using pyHICCUPS (v0.3.8)::
 
     $ pyHICCUPS -p GM12878.Hi-C.10kb.cool -O GM12878_pyHICCUPS_test.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
 
-And here is an example command using Mustache (v1.3.2)::
+And here is an example command for using Mustache (v1.3.2)::
 
     $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 10000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache_test.tsv
 
 Performance
 ===========
-In GM12878 cells, ICE detected only 15,446 loops in GM12878 cells, while Raichu
-identified 28,986 loops (Here pyHICCUPS is applied, however, we showed in the
-manuscript that various loop calling methods can obtain a similar level of
-improvement on loop detection using Raichu-normalized signals). Furthermore,
-90.6% of loops detected by ICE (13,997 out of 15,446) were also identified by
-Raichu, while 51.7% of loops detected by Raichu (14,989 out of 28,986) were missed
-by ICE.
+In GM12878 cells, ICE detected 15,446 loops, while Raichu identified 28,986 loops.
+(For this analysis, pyHICCUPS was applied; however, as shown in the manuscript,
+various loop-calling methods achieve a similar level of improvement when using
+Raichu-normalized signals.) Notably, 90.6% of loops detected by ICE (13,997 out
+of 15,446) were also identified by Raichu, whereas 51.7% of loops detected by
+Raichu (14,989 out of 28,986) were missed by ICE.
 
-We divided loops into three categories: loops unique to ICE (ICE-specific), loops
-unique to Raichu (Raichu-specific), and loops detected by both ICE and Raichu (Common).
-Strikingly, we observed that while ICE-specific and Raichu-specific loops exhibited
-comparable enrichment for CTCF and RAD21, Raichu-specific loops demonstrated substantially
-greater enrichment for a broader range of TFs and histone modifications closely associated
-with transcriptional regulation, including RNA polymerase II (POLR2A), CREB1, RELB, H3K4me3,
-and H3K27ac.
+We classified the loops into three categories: ICE-specific loops, Raichu-specific loops,
+and common loops (detected by both ICE and Raichu). Interestingly, while ICE-specific
+and Raichu-specific loops showed comparable enrichment for CTCF and RAD21, Raichu-specific
+loops exhibited substantially greater enrichment for a broader range of transcription
+factors (TFs) and histone modifications closely associated with transcriptional regulation.
+These include RNA polymerase II (POLR2A), CREB1, RELB, H3K4me3, and H3K27ac.
 
 .. image:: ./images/performance.png
         :align: center
