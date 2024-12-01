@@ -35,11 +35,10 @@ Usage
 =====
 Raichu is built on the `cooler <https://github.com/open2c/cooler>`_ Python package
 for reading and processing contact matrices. To demonstrate how to normalize a
-contact matrix in .cool format,
-let's download a .cool file "GM12878.Hi-C.10kb.cool" by following this
-`link <https://www.jianguoyun.com/p/DUoSz7gQh9qdDBi5lLwFIAA>`_, which contains
-contact matrices at the 10kb resolution, generated from an in situ Hi-C dataset
-in the GM12878 cell line.
+contact matrix in .cool format, let's download the file "GM12878.Hi-C.10kb.cool"
+from this `link <https://www.jianguoyun.com/p/DUoSz7gQh9qdDBi5lLwFIAA>`_. This
+file contains contact matrices at 10kb resolution, generated from an in situ Hi-C
+dataset in the GM12878 cell line.
 
 .. note:: Raichu is also applicable to other 3D genomic platforms,
     such as Micro-C, HiChIP, and ChIA-PET.
@@ -50,23 +49,23 @@ Now all that is needed is to execute the commands below in a terminal::
 
 Here:
 
-1. The parameter "--cool-uri" specifies the URI of contact matrices at
+1.The parameter "--cool-uri" specifies the URI of contact matrices at
 a certain resolutions. The value should be the file path for a single-resolution
 cooler file (usually suffixed with ".cool"), and for a multi-resolution
 cooler file (usually suffixed with ".mcool"), the value should be the file path
 followed by ``::`` followed by the internal group path to the root of a data
 collection, such as "test.mcool::resolutions/10000", "test.mcool::resolutions/5000",
 etc.
-2. The parameter "--window-size" specifies the sliding window size, which
+2.The parameter "--window-size" specifies the sliding window size, which
 can be set to the default value 200 for most cases, increasing its value may
 get more accurate calculation of the bias vectors with a cost of more running time.
-3. The parameter "-p" or "--nproc" determines how many processes to be allocated
+3.The parameter "-p" or "--nproc" determines how many processes to be allocated
 to perform the calculation. Based this parameter, Raichu performs the calculation
 for chromosomes in parallel. So setting this parameter to a value greater than
 the number of chromosomes won't get additional speed improvement.
-4. The parameter "-n" or "--name" specifies the name of the column to write
+4.The parameter "-n" or "--name" specifies the name of the column to write
 the calculated bias vectors.
-5. If the parameter "-f" or "--force" is specified, the target column
+5.If the parameter "-f" or "--force" is specified, the target column
 in the bin table will be overwritten if it already exists.
 
 
