@@ -44,7 +44,7 @@ in the GM12878 cell line.
 .. note:: Raichu is also applicable to other 3D genomic platforms,
     such as Micro-C, HiChIP, and ChIA-PET.
 
-Now all that is needed is to execute the commands below in a terminal:
+Now all that is needed is to execute the commands below in a terminal::
 
     $ raichu --cool-uri GM12878.Hi-C.10kb.cool --window-size 200 -p 8 -n obj_weight -f
 
@@ -82,12 +82,12 @@ Raichu-normalized signals, we can run the
 `cooltools eigs-cis  <https://github.com/open2c/cooltools>`_ command by
 specifying the ``--clr-weight-name`` parameter to "obj_weight" (based on
 your ``-n`` setting when you ran raichu). The full command should look like
-this:
+this::
 
     $ cooltools eigs-cis --phasing-track hg38-gene-density-100K.bedGraph --clr-weight-name obj_weight -o GM_raichu GM12878-MboI-allReps-hg38.mcool::resolutions/100000
 
 Similarly, the following command can be used to compute insulation scores
-using the Raichu-normalized signals:
+using the Raichu-normalized signals::
 
     $ cooltools insulation --ignore-diags 1 -p 8 -o GM_raichu.IS.25kb.tsv --clr-weight-name obj_weight GM12878-MboI-allReps-hg38.mcool::resolutions/25000 1000000
 
@@ -95,11 +95,11 @@ For loop detection, numerous methods can be selected. We have tested
 the `pyHICCUPS <https://github.com/XiaoTaoWang/HiCPeaks>`_, `Mustache <https://github.com/ay-lab/mustache>`_,
 and `Peakachu <https://github.com/tariks/peakachu>` software.
 
-Here is an example command using pyHICCUPS (v0.3.8):
+Here is an example command using pyHICCUPS (v0.3.8)::
 
     $ pyHICCUPS -p GM12878.Hi-C.10kb.cool -O GM12878_pyHICCUPS_test.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
 
-And here is an example command using Mustache (v1.3.2):
+And here is an example command using Mustache (v1.3.2)::
 
     $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 10000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache_test.tsv
 
