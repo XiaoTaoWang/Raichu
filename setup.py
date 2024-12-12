@@ -1,7 +1,9 @@
 # Author: Xiaotao Wang
 
 """
-Setup script for Raichu.
+This is a free software under GPLv3. Therefore, you can modify, redistribute
+or even mix it with other GPL-compatible codes. See the file LICENSE
+included with the distribution for more details.
 
 """
 import os, sys, raichu, glob
@@ -20,17 +22,14 @@ for src in glob.glob('scripts/*'):
     open(src, 'w').write(text)
 
 setuptools.setup(
-    name = 'raichu',
+    name = 'RaichuNorm',
     version = raichu.__version__,
     author = raichu.__author__,
     author_email = 'wangxiaotao@fudan.edu.cn',
     url = 'https://github.com/XiaoTaoWang/Raichu',
     description = 'A cross-platform method for chromatin contact normalization',
-    keywords = 'Hi-C ChIA-PET HiChIP PLAC-Seq normalization',
+    keywords = 'Hi-C ChIA-PET HiChIP PLAC-Seq single-cell normalization',
     packages = setuptools.find_packages(),
-    package_data = {
-        '': ['data/*']
-    },
     scripts = glob.glob('scripts/*'),
     long_description = read('README.rst'),
     long_description_content_type='text/x-rst',

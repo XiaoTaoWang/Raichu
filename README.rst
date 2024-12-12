@@ -28,7 +28,7 @@ or `pip <https://pypi.org/project/pip/>`_::
     $ conda config --append channels conda-forge
     $ mamba create -n 3Dnorm cooler numba joblib
     $ mamba activate 3Dnorm
-    $ pip install raichu
+    $ pip install RaichuNorm
 
 Raichu is a command-line tool, and after successful installation, help information
 can be accessed by running ``raichu -h`` in a terminal.
@@ -43,7 +43,7 @@ file contains contact matrices at 10kb resolution, generated from an in situ Hi-
 dataset in the GM12878 cell line.
 
 .. note:: Raichu is also applicable to other 3D genomic platforms,
-    such as Micro-C, HiChIP, and ChIA-PET.
+    such as Micro-C, HiChIP, ChIA-PET, and single-cell Hi-C.
 
 Now all that is needed is to execute the commands below in a terminal::
 
