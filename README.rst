@@ -8,13 +8,15 @@ However, while structural or CTCF-associated loop signals are retained,
 enhancer-promoter interaction signals are often greatly diminished after ICE
 normalization and similar methods, making these regulatory loops harder to detect.
 To address this limitation, we developed Raichu, a novel method for normalizing
-chromatin contact data. Raichu identifies nearly twice as many chromatin loops as
-ICE, recovering almost all loops detected by ICE and revealing thousands of additional
-enhancer-promoter loops missed by ICE. With its enhanced sensitivity for regulatory
-loops, Raichu detects more biologically meaningful differential loops between conditions
-in the same cell type. Furthermore, Raichu performs robustly across different sequencing
-depths and platforms, making it a powerful tool for uncovering new insights into 3D genomic
-organization and transcriptional regulation.
+chromatin contact data. Raichu identifies nearly twice as many chromatin loops
+as ICE, recovering almost all loops detected by ICE and revealing thousands of
+additional enhancer-promoter loops missed by ICE. With its enhanced sensitivity
+for regulatory loops, Raichu detects more biologically meaningful differential
+loops between conditions in the same cell type. Furthermore, Raichu performs
+consistently across different sequencing depths and platforms, including Hi-C,
+HiChIP, and single-cell Hi-C, making it a versatile tool for uncovering new
+insights into three-dimensional (3D) genomic organization and transcriptional
+regulation.
 
 Installation
 ============
