@@ -98,7 +98,9 @@ software.
 
 Here is an example command for using pyHICCUPS (v0.3.8)::
 
-    $ pyHICCUPS -p GM12878.Hi-C.10kb.cool -O GM12878_pyHICCUPS_test.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+    $ pyHICCUPS -p GM12878.Hi-C.5kb.cool -O GM12878_pyHICCUPS.5kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+    $ pyHICCUPS -p GM12878.Hi-C.10kb.cool -O GM12878_pyHICCUPS.10kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+    $ combine-resolutions -O GM12878_pyHICCUPS.bedpe -p GM12878_pyHICCUPS.5kb.bedpe GM12878_pyHICCUPS.10kb.bedpe -R 5000 10000 -G 10000 -M 100000 --max-res 10000
 
 And here is an example command for using Mustache (v1.3.2)::
 
