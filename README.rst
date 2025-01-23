@@ -26,7 +26,7 @@ or `pip <https://pypi.org/project/pip/>`_::
     $ conda config --append channels defaults
     $ conda config --append channels bioconda
     $ conda config --append channels conda-forge
-    $ mamba create -n 3Dnorm numba joblib "cooler==0.9.3"
+    $ mamba create -n 3Dnorm numba joblib "cooler==0.9.3" "scipy>=1.10"
     $ mamba activate 3Dnorm
     $ pip install RaichuNorm
 
