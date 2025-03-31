@@ -26,8 +26,15 @@ def getargs():
                         'chromosomes will be included. Specially, "#" stands for chromosomes '
                         'with numerical labels. "--chroms" with zero argument will include '
                         'all chromosome data.')
+    parser.add_argument('--regions', help='''Path to a BED file where each row specifies a genomic
+                        region. If this file is provided, Raichu will restrict its calculation to
+                        only the regions defined in the file. By default, the bias vector is calculated
+                        for the whole genome.''')
     parser.add_argument('--window-size', default=200, type=int,
-                        help='''The window size in the unit of pixels.''')
+                        help='''Size of the sliding window used during calculation, specified in bins.''')
+    parser.add_argument('--max-distance', default=200, type=int,
+                        help='''Maximum genomic distance in bins. Only interactions with a distance less
+                        than or equal to this value will be considered.''')
     parser.add_argument('--ignore-diags', default=0, type=int,
                         help='''Number of diagonals of the contact matrix to ignore.
                         Examples: 0 ignores nothing, 1 ignores the main diagonal, and 2
@@ -105,7 +112,7 @@ def run():
         import cooler
         import numpy as np
         from raichu import util
-        from raichu.util import pipeline, calculate_expected, write_weights
+        from raichu.util import pipeline, calculate_expected, write_weights, load_BED
         from joblib import Parallel, delayed
 
         #util.numba.set_num_threads(args.threads)
@@ -126,7 +133,11 @@ def run():
             # prepare for the calculation
             cool_path, group_path = cooler.util.parse_cooler_uri(cool_uri)
             clr = cooler.Cooler(cool_uri)
-            ws_bp = ws_bin * clr.binsize # window size in the unit of base pairs
+            if not args.regions is None:
+                included_bins = load_BED(args.regions, clr.binsize)
+            else:
+                included_bins = None
+            max_dis = args.max_distance * clr.binsize # maximum distance in the unit of base pairs
             if (not column_name in clr.bins()) or args.force:
                 logger.info('Calculating the average contact frequency for each genomic distance ...')
                 chroms = []
@@ -134,7 +145,7 @@ def run():
                     chromlabel = c.lstrip('chr')
                     if (not args.chroms) or (chromlabel.isdigit() and '#' in args.chroms) or (chromlabel in args.chroms):
                         chroms.append(c)
-                Ed = calculate_expected(clr, chroms, max_dis=ws_bp, nproc=nproc)
+                Ed = calculate_expected(clr, chroms, included_bins, max_dis=max_dis, nproc=nproc)
                 logger.info('Done')
 
                 # initialize the bias vector
@@ -142,7 +153,11 @@ def run():
                 logger.info('Optimizing the bias vector using dual annealing ...')
                 queue = []
                 for c in chroms:
-                    queue.append((clr, c, Ed, ws_bin, ndiag, lb, ub, maxiter, min_nnz, n_threads))
+                    if included_bins is None:
+                        queue.append((clr, c, Ed, ws_bin, included_bins, ndiag, lb, ub, maxiter, min_nnz, n_threads))
+                    else:
+                        if c in included_bins:
+                            queue.append((clr, c, Ed, ws_bin, included_bins[c], ndiag, lb, ub, maxiter, min_nnz, n_threads))
                 collect = Parallel(n_jobs=nproc)(delayed(pipeline)(*i) for i in queue)
                 for weights, indices in collect:
                     bias[indices] = 1 / (10 ** weights)

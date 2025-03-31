@@ -4,6 +4,7 @@ from joblib import Parallel, delayed
 import cooler, h5py, numba, logging
 from scipy.optimize import dual_annealing
 from numba import njit, double, int32
+from collections import defaultdict
         
 @njit(double(double[:], numba.types.Tuple((double[:], int32[:,:], double[:]))), parallel=True, fastmath=True, nogil=True, cache=True)
 def eval_func(weights, *args):
@@ -38,11 +39,15 @@ def optimize_by_dual_annealing(ini_weights, data, coords, Earr, lb, ub, maxiter)
     
     return weights, ret
 
-def calculate_expected_core(clr, c, max_dis):
+def calculate_expected_core(clr, c, included_bins, max_dis):
 
     M = clr.matrix(balance=False, sparse=True).fetch(c).tocsr()
     marg = np.array(M.sum(axis=0)).ravel()
     valid_cols = marg > 0
+    if not included_bins is None:
+        tmp = np.zeros(valid_cols.size, dtype=bool)
+        tmp[included_bins] = True
+        valid_cols = valid_cols & tmp
     n = M.shape[0]
 
     expected = {}
@@ -59,13 +64,17 @@ def calculate_expected_core(clr, c, max_dis):
     
     return expected
 
-def calculate_expected(clr, chroms, max_dis, nproc=1, N=400, dynamic_window_size=10):
+def calculate_expected(clr, chroms, included_bins, max_dis, nproc=1, N=400, dynamic_window_size=10):
     
     binsize = clr.binsize
     max_dis = max_dis // binsize
     queue = []
     for c in chroms:
-        queue.append((clr, c, max_dis))
+        if included_bins is None:
+            queue.append((clr, c, None, max_dis))
+        else:
+            if c in included_bins:
+                queue.append((clr, c, included_bins[c], max_dis))
     
     results = Parallel(n_jobs=nproc)(delayed(calculate_expected_core)(*i) for i in queue)
     diag_sums = []
@@ -93,10 +102,16 @@ def calculate_expected(clr, chroms, max_dis, nproc=1, N=400, dynamic_window_size
     
     return Ed
 
-def initialize_weights(M):
+def initialize_weights(M, included_bins):
 
     # input M: sparse matrix in CSR
-    marg = np.array(M.sum(axis=0)).ravel()
+    tmp = np.array(M.sum(axis=0)).ravel()
+    if included_bins is None:
+        marg = tmp
+    else:
+        marg = np.zeros_like(tmp)
+        marg[included_bins] = tmp[included_bins]
+
     logNzMarg = np.log(marg[marg>0])
     med_logNzMarg = np.median(logNzMarg)
     dev_logNzMarg = cooler.balance.mad(logNzMarg)
@@ -152,7 +167,7 @@ def extract_valid_pixels(M, Ed, valid_cols, start_diag=0, top_per=99, bottom_per
 
     return coords, data
 
-def pipeline(clr, chrom, Ed, ws_bin, ndiag, lb, ub, maxiter, min_nnz, n_threads):
+def pipeline(clr, chrom, Ed, ws_bin, included_bins, ndiag, lb, ub, maxiter, min_nnz, n_threads):
 
     # clr: Cooler
     # chrom: chromosome name
@@ -163,12 +178,16 @@ def pipeline(clr, chrom, Ed, ws_bin, ndiag, lb, ub, maxiter, min_nnz, n_threads)
     logger = logging.getLogger()
     M = clr.matrix(balance=False, sparse=True).fetch(chrom).tocsr()
     indices = clr.bins().fetch(chrom).index.values
-    ini_weights, valid_cols = initialize_weights(M)
+    ini_weights, valid_cols = initialize_weights(M, included_bins)
     ini_weights[ini_weights>0] = np.log10(ini_weights[ini_weights>0])
     coords, data = extract_valid_pixels(M, Ed, valid_cols, start_diag=ndiag)
     # optimize the weights in sliding windows
-    ws_bp = ws_bin * clr.binsize # window size in the unit of base pairs
-    queue = split_chromosome(clr, chrom, ws_bp)
+    if included_bins is None:
+        ws_bp = ws_bin * clr.binsize # window size in the unit of base pairs
+        queue = split_chromosome(clr, chrom, ws_bp)
+    else:
+        queue = extract_valid_regions(included_bins)
+
     collect = {}
     for s, e in queue:
         #print('current region: {0}:{1}-{2}'.format(chrom, s*clr.binsize, e*clr.binsize))
@@ -176,7 +195,7 @@ def pipeline(clr, chrom, Ed, ws_bin, ndiag, lb, ub, maxiter, min_nnz, n_threads)
         ini_weights_ = ini_weights[s:e]
         mask = (coords[:,0] >= s) & (coords[:,1] < e)
         rl = e - s
-        if mask.sum() / ((rl**2 - rl) // 2) < 0.05:
+        if (valid_cols[s:e].sum() / rl < 0.1) and (included_bins is None):
             # skip regions with very few data points
             weights_ = ini_weights_.copy() * np.nan
             collect[(s, e)] = [weights_, None]
@@ -218,6 +237,15 @@ def split_chromosome(clr, chrom, window_size):
             else:
                 queue.append((s//res, chromsize//res+1))
             break
+    
+    return queue
+
+def extract_valid_regions(included_bins):
+
+    pieces = np.split(included_bins, np.where(np.diff(included_bins)!=1)[0]+1)
+    queue = []
+    for arr in pieces:
+        queue.append((arr[0], arr[-1]+1))
     
     return queue
 
@@ -267,3 +295,18 @@ def start_logger(logfil):
     logger.addHandler(filehandler)
 
     return logger
+
+def load_BED(infil, res):
+
+    D = defaultdict(set)
+    with open(infil, 'r') as source:
+        for line in source:
+            c, s, e = line.rstrip().split()
+            s, e = int(s), int(e)
+            bins = set(range(s//res, (e+res-1)//res))
+            D[c].update(bins)
+    
+    for c in D:
+        D[c] = sorted(D[c])
+    
+    return D
