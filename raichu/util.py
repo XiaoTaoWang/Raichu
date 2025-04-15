@@ -186,7 +186,7 @@ def pipeline(clr, chrom, Ed, ws_bin, included_bins, ndiag, lb, ub, maxiter, min_
         ws_bp = ws_bin * clr.binsize # window size in the unit of base pairs
         queue = split_chromosome(clr, chrom, ws_bp)
     else:
-        queue = extract_valid_regions(included_bins)
+        queue = extract_valid_regions(clr, included_bins, ws_bp)
 
     collect = {}
     for s, e in queue:
@@ -240,12 +240,21 @@ def split_chromosome(clr, chrom, window_size):
     
     return queue
 
-def extract_valid_regions(included_bins):
+def extract_valid_regions(clr, included_bins, window_size):
 
     pieces = np.split(included_bins, np.where(np.diff(included_bins)!=1)[0]+1)
+    res = clr.binsize
     queue = []
     for arr in pieces:
-        queue.append((arr[0], arr[-1]+1))
+        start = arr[0] * res
+        end = arr[-1] * res
+        for s in range(start, end, window_size//10*9):
+            if end - s > window_size//2*3:
+                e = s + window_size
+                queue.append((s//res, e//res))
+            else:
+                queue.append((s//res, end//res))
+                break
     
     return queue
 
@@ -301,7 +310,7 @@ def load_BED(infil, res):
     D = defaultdict(set)
     with open(infil, 'r') as source:
         for line in source:
-            c, s, e = line.rstrip().split()
+            c, s, e = line.rstrip().split()[:3]
             s, e = int(s), int(e)
             bins = set(range(s//res, (e+res-1)//res))
             D[c].update(bins)
