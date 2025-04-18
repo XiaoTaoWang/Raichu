@@ -182,8 +182,8 @@ def pipeline(clr, chrom, Ed, ws_bin, included_bins, ndiag, lb, ub, maxiter, min_
     ini_weights[ini_weights>0] = np.log10(ini_weights[ini_weights>0])
     coords, data = extract_valid_pixels(M, Ed, valid_cols, start_diag=ndiag)
     # optimize the weights in sliding windows
+    ws_bp = ws_bin * clr.binsize # window size in the unit of base pairs
     if included_bins is None:
-        ws_bp = ws_bin * clr.binsize # window size in the unit of base pairs
         queue = split_chromosome(clr, chrom, ws_bp)
     else:
         queue = extract_valid_regions(clr, included_bins, ws_bp)
