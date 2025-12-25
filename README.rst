@@ -1,22 +1,27 @@
 Raichu 
 ======
-Accurately detecting enhancer-promoter loops from genome-wide interaction data,
-such as Hi-C, is crucial for understanding gene regulation. Current normalization
-methods, such as Iterative Correction and Eigenvector decomposition (ICE), are
-commonly used to remove biases in Hi-C data prior to chromatin loop detection.
-However, while structural or CTCF-associated loop signals are retained,
-enhancer-promoter interaction signals are often greatly diminished after ICE
-normalization and similar methods, making these regulatory loops harder to detect.
-To address this limitation, we developed Raichu, a novel method for normalizing
-chromatin contact data. Raichu identifies nearly twice as many chromatin loops
-as ICE, recovering almost all loops detected by ICE and revealing thousands of
-additional enhancer-promoter loops missed by ICE. With its enhanced sensitivity
-for regulatory loops, Raichu detects more biologically meaningful differential
-loops between conditions in the same cell type. Furthermore, Raichu performs
-consistently across different sequencing depths and platforms, including Hi-C,
-HiChIP, and single-cell Hi-C, making it a versatile tool for uncovering new
-insights into three-dimensional (3D) genomic organization and transcriptional
+Accurate detection of enhancer-promoter loops from genome-wide chromatin interaction
+data is critical for understanding gene regulation. Standard normalization methods,
+such as matrix balancing approaches, are widely used to correct biases in chromatin
+contact data prior to chromatin loop detection. However, while these methods preserve
+structural loop signals, they often attenuate enhancer-promoter interaction signals,
+making these regulatory loops more difficult to detect. To address this limitation,
+we develop Raichu, a novel normalization method for chromatin contact data. Raichu
+identifies nearly twice as many loops as conventional normalization approaches,
+recovering almost all previously detected loops while uncovering thousands of
+additional enhancer-promoter interactions that are otherwise missed. With its
+improved sensitivity for regulatory loops, Raichu detects more biologically meaningful
+differential interactions, including those between conditions within the same cell
+type. Moreover, Raichu performs robustly across a wide range of sequencing depths,
+resolutions, species, and experimental platforms, making it a versatile tool for
+revealing new insights into three-dimensional genome organization and transcriptional
 regulation.
+
+Citation
+========
+Wang, X., Shi, D., Xue, F., Liu, Y., Yang, H., Jiang, L. Boosting the detection of
+enhancer-promoter loops via normalization methods for chromatin interaction data.
+Nature Communications. 2026.
 
 Installation
 ============
@@ -41,9 +46,6 @@ contact matrix in .cool format, let's download the file "GM12878.Hi-C.10kb.cool"
 from this `link <https://www.jianguoyun.com/p/DUoSz7gQh9qdDBi5lLwFIAA>`_. This
 file contains contact matrices at 10kb resolution, generated from an in situ Hi-C
 dataset in the GM12878 cell line.
-
-.. note:: Raichu is also applicable to other 3D genomic platforms,
-    such as Micro-C, HiChIP, ChIA-PET, and single-cell Hi-C.
 
 Now all that is needed is to execute the commands below in a terminal::
 
@@ -73,7 +75,6 @@ calculated bias vectors will be written.
 5. If the ``-f`` or ``--force`` parameter is specified, the target column in the
 bin table will be overwritten if it already exists.
 
-
 Downstream Analysis with Raichu-Normalized Matrices
 ===================================================
 Raichu stores the calculated bias vectors in the same format as
@@ -96,17 +97,23 @@ Raichu-normalized signals::
 
 For loop detection, we have tested the `pyHICCUPS <https://github.com/XiaoTaoWang/HiCPeaks>`_,
 `Mustache <https://github.com/ay-lab/mustache>`_, and `Peakachu <https://github.com/tariks/peakachu>`_
-software.
+software. See the next section for the specific commands used in our analyses.
 
-Here is an example command for using pyHICCUPS (v0.3.8)::
+Collection of loop-calling commands
+===================================
+To identify loops from the GM12878 Hi-C data (Figure 2 in the manuscript), we used
+the following commands (pyHICCUPS v0.3.9 was used):
 
-    $ pyHICCUPS -p GM12878.Hi-C.5kb.cool -O GM12878_pyHICCUPS.5kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
-    $ pyHICCUPS -p GM12878.Hi-C.10kb.cool -O GM12878_pyHICCUPS.10kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+    $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/5000 -O GM12878_pyHICCUPS.5kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+    $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/10000 -O GM12878_pyHICCUPS.10kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
     $ combine-resolutions -O GM12878_pyHICCUPS.bedpe -p GM12878_pyHICCUPS.5kb.bedpe GM12878_pyHICCUPS.10kb.bedpe -R 5000 10000 -G 10000 -M 100000 --max-res 10000
 
-And here is an example command for using Mustache (v1.3.2)::
+To identify loops from the same dataset using Mustache (v1.3.2) (Supplementary
+Figure 14 in the manuscript), we used the following commands:
 
-    $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 10000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache_test.tsv
+    $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 5000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache.5kb.tsv
+    $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 10000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache.10kb.tsv
+    $ combine-resolutions -O GM12878_mustache.bedpe -p GM12878_mustache.5kb.tsv GM12878_mustache.10kb.tsv -R 5000 10000 -G 10000 -M 100000 --max-res 10000
 
 Performance
 ===========
@@ -118,11 +125,10 @@ of 15,446) were also identified by Raichu, whereas 51.7% of loops detected by
 Raichu (14,989 out of 28,986) were missed by ICE.
 
 We classified the loops into three categories: ICE-specific loops, Raichu-specific loops,
-and common loops (detected by both ICE and Raichu). Interestingly, while ICE-specific
-and Raichu-specific loops showed comparable enrichment for CTCF and RAD21, Raichu-specific
+and common loops (detected by both ICE and Raichu). While ICE-specific, Raichu-specific,
+and common loops showed comparable enrichment for CTCF and RAD21, Raichu-specific
 loops exhibited substantially greater enrichment for a broader range of transcription
 factors (TFs) and histone modifications closely associated with transcriptional regulation.
-These include RNA polymerase II (POLR2A), CREB1, RELB, H3K4me3, and H3K27ac.
 
 .. image:: ./images/performance.png
         :align: center
