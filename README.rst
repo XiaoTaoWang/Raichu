@@ -99,21 +99,118 @@ For loop detection, we have tested the `pyHICCUPS <https://github.com/XiaoTaoWan
 `Mustache <https://github.com/ay-lab/mustache>`_, and `Peakachu <https://github.com/tariks/peakachu>`_
 software. See the next section for the specific commands used in our analyses.
 
-Collection of loop-calling commands
-===================================
-To identify loops from the GM12878 Hi-C data (Figure 2 in the manuscript), we used
-the following commands (pyHICCUPS v0.3.9 was used):
+Loop-calling commands used in the manuscript
+============================================
+This section documents the exact commands used to identify chromatin loops in the datasets
+analyzed in the manuscript, enabling full reproducibility of the benchmarking and comparative
+analyses. Note that for each dataset, the same parameters were applied when using ICE-normalized
+signals for loop detection, except that the ``--clr-weight-name`` parameter was set to "weight".
 
-    $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/5000 -O GM12878_pyHICCUPS.5kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
-    $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/10000 -O GM12878_pyHICCUPS.10kb.bedpe --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+GM12878 Hi-C data (Figure 2)
+----------------------------
+To identify loops from the GM12878 Hi-C data, we used the following commands with pyHICCUPS v0.3.9:
+
+    $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/5000 -O GM12878_pyHICCUPS.5kb.bedpe \
+                --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
+    $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/10000 -O GM12878_pyHICCUPS.10kb.bedpe \
+                --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
     $ combine-resolutions -O GM12878_pyHICCUPS.bedpe -p GM12878_pyHICCUPS.5kb.bedpe GM12878_pyHICCUPS.10kb.bedpe -R 5000 10000 -G 10000 -M 100000 --max-res 10000
 
-To identify loops from the same dataset using Mustache (v1.3.2) (Supplementary
-Figure 14 in the manuscript), we used the following commands:
+GM12878 Hi-C (Mustache)
+-----------------------
+Loops were also identified from the same GM12878 Hi-C dataset using Mustache v1.3.2
+(Supplementary Figure 14):
 
     $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 5000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache.5kb.tsv
     $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 10000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache.10kb.tsv
     $ combine-resolutions -O GM12878_mustache.bedpe -p GM12878_mustache.5kb.tsv GM12878_mustache.10kb.tsv -R 5000 10000 -G 10000 -M 100000 --max-res 10000
+
+mESC Hi-C (Figure 3)
+--------------------
+To identify loops from the mESC Hi-C data, we used pyHICCUPS v0.3.9 with the following commands:
+
+    $ pyHICCUPS -p HIC-mESC-DpnII-allReps.10kb.cool -O HIC-mESC-hicpeaks.10kb.raichu.min1000.txt \
+                --pw 2 4 --ww 5 7 --maxww 7 --only-anchors --min-local-reads 1000 --min-marginal-peaks 3 \
+                --nproc 8 --clr-weight-name obj_weight --maxapart 3000000 --logFile HIC-mESC-hicpeaks.raichu.log
+    $ pyHICCUPS -p HIC-mESC-DpnII-allReps.5kb.cool -O HIC-mESC-hicpeaks.5kb.raichu.min1000.txt \
+                --pw 2 4 --ww 5 7 --maxww 7 --only-anchors --min-local-reads 1000 --min-marginal-peaks 3 \
+                --nproc 8 --clr-weight-name obj_weight --maxapart 1000000 --logFile HIC-mESC-hicpeaks.raichu.log
+    $ combine-resolutions -O HIC-mESC-hicpeaks.raichu.min1000.bedpe -p HIC-mESC-hicpeaks.5kb.raichu.min1000.txt HIC-mESC-hicpeaks.10kb.raichu.min1000.txt \
+                          -R 5000 10000 -G 10000 -M 100000 --max-res 10000
+
+mNPC and hNPC Hi-C (Figure 6)
+-----------------------------
+To identify loops from the mNPC Hi-C data, we used pyHICCUPS v0.3.9 with the following commands:
+
+    $ pyHICCUPS -p HIC-mNPC-DpnII-allReps.5kb.cool -O HIC-mNPC-hicpeaks.5kb.raichu.min300.txt \
+                --pw 1 2 4 --ww 3 5 7 --only-anchors --min-local-reads 300 --nproc 8 --clr-weight-name obj_weight \
+                --maxapart 4000000 --logFile HIC-mNPC-hicpeaks.raichu.log
+    $ pyHICCUPS -p HIC-mNPC-DpnII-allReps.10kb.cool -O HIC-mNPC-hicpeaks.10kb.raichu.min300.txt \
+                --pw 1 2 4 --ww 3 5 7 --only-anchors --min-local-reads 300 --nproc 8 --clr-weight-name obj_weight \
+                --maxapart 4000000 --logFile HIC-mNPC-hicpeaks.raichu.log
+    $ combine-resolutions -O mNPC-raichu.min300.combined.bedpe -p HIC-mNPC-hicpeaks.5kb.raichu.min300.txt HIC-mNPC-hicpeaks.10kb.raichu.min300.txt \
+                          -R 5000 10000 -G 10000 -M 100000 --max-res 10000
+
+The same parameters were applied to the hNPC Hi-C data.
+
+H1ESC Micro-C (Figure 7)
+------------------------
+Loops from the H1ESC Micro-C data were identified using pyHICCUPS v0.3.9 as well:
+
+    $ pyHICCUPS -p MicroC-H1ESC-MNase-allReps.10kb.cool -O H1ESC_MicroC_hicpeaks.10kb.raichu.min100.txt \
+                --pw 2 3 4 --ww 5 6 7 --maxww 7 --only-anchors --min-local-reads 100 --nproc 8 \
+                --clr-weight-name obj_weight --maxapart 4000000 --logFile H1ESC_MicroC_hicpeaks.raichu.log
+    $ pyHICCUPS -p MicroC-H1ESC-MNase-allReps.5kb.cool -O H1ESC_MicroC_hicpeaks.5kb.raichu.min100.txt \
+                --pw 2 3 4 --ww 5 6 7 --maxww 7 --only-anchors --min-local-reads 100 --nproc 8 \
+                --clr-weight-name obj_weight --maxapart 2000000 --logFile H1ESC_MicroC_hicpeaks.raichu.log
+    $ pyHICCUPS -p MicroC-H1ESC-MNase-allReps.2kb.cool -O H1ESC_MicroC_hicpeaks.2kb.raichu.min100.txt \
+                --pw 2 3 4 --ww 5 6 7 --maxww 7 --only-anchors --min-local-reads 100 --nproc 8 \
+                --clr-weight-name obj_weight --maxapart 1000000 --logFile H1ESC_MicroC_hicpeaks.raichu.log
+    $ combine-resolutions -O H1ESC_MicroC_hicpeaks.raichu.min100.bedpe -p H1ESC_MicroC_hicpeaks.2kb.raichu.min100.txt \
+                          H1ESC_MicroC_hicpeaks.5kb.raichu.min100.txt H1ESC_MicroC_hicpeaks.10kb.raichu.min100.txt \
+                          -R 2000 5000 10000 -G 10000 -M 100000 --max-res 10000 --minapart 8
+
+mESC region-capture Micro-C (Figure 7)
+--------------------------------------
+First, we constructed a BED file defining the captured regions:
+
+    $ cat capture-regions.bed
+
+    chr5    31257344        32382344
+    chr8    84846629        85856629
+    chr18   58032072        59034072
+    chr3    33804149        35704149
+    chr6    122451959       122876959
+
+Bias vectors were then calculated only within the captured regions using Raichu:
+
+    $ raichu --cool-uri GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/1000 \
+             --window-size 800 --regions capture-regions.bed --ignore-diags 0 --lower-bound 0.001 \
+             --upper-bound 1000 -p 4 -n obj_weight -f --logFile RCMC_raichu.log
+    $ raichu --cool-uri GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/500 \
+             --window-size 800 --regions capture-regions.bed --ignore-diags 0 --lower-bound 0.001 \
+             --upper-bound 1000 -p 4 -n obj_weight -f --logFile RCMC_raichu.log
+    $ raichu --cool-uri GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/250 \
+             --window-size 800 --regions capture-regions.bed --ignore-diags 0 --lower-bound 0.001 \
+             --upper-bound 1000 -p 4 -n obj_weight -f --logFile RCMC_raichu.log
+
+Finally, loops within the captured regions were identified using pyHICCUPS v0.3.9:
+
+    $ pyHICCUPS -p GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/1000 \
+                -O mESC_RCMC_hicpeaks.1kb.raichu.min100.txt --pw 2 3 4 --ww 5 6 7 --maxww 7 \
+                -C 5 8 18 3 6 --only-anchors --min-local-reads 100 --nproc 1 --clr-weight-name obj_weight \
+                --maxapart 400000 --logFile mESC_RCMC_hicpeaks.log
+    $ pyHICCUPS -p GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/500 \
+                -O mESC_RCMC_hicpeaks.500bp.raichu.min100.txt --pw 2 3 4 --ww 5 6 7 --maxww 7 \
+                -C 5 8 18 3 6 --only-anchors --min-local-reads 100 --nproc 1 --clr-weight-name obj_weight \
+                --maxapart 200000 --logFile mESC_RCMC_hicpeaks.log
+    $ pyHICCUPS -p GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/250 \
+                -O mESC_RCMC_hicpeaks.250bp.raichu.min100.txt --pw 2 3 4 --ww 5 6 7 --maxww 7 \
+                -C 5 8 18 3 6 --only-anchors --min-local-reads 100 --nproc 1 --clr-weight-name obj_weight \
+                --maxapart 100000 --logFile mESC_RCMC_hicpeaks.log
+    $ combine-resolutions -O mESC_RCMC_hicpeaks.raichu.min100.bedpe -p mESC_RCMC_hicpeaks.250bp.raichu.min100.txt \
+                          mESC_RCMC_hicpeaks.500bp.raichu.min100.txt mESC_RCMC_hicpeaks.1kb.raichu.min100.txt \
+                          -R 250 500 1000 -G 500 -M 5000 --max-res 500 --minapart 8
 
 Performance
 ===========
