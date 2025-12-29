@@ -108,7 +108,7 @@ signals for loop detection, except that the ``--clr-weight-name`` parameter was 
 
 GM12878 Hi-C data (Figure 2)
 ----------------------------
-To identify loops from the GM12878 Hi-C data, we used the following commands with pyHICCUPS v0.3.9:
+To identify loops from the GM12878 Hi-C data, we used the following commands with pyHICCUPS v0.3.9::
 
     $ pyHICCUPS -p GM12878-MboI-allReps-hg38.mcool::resolutions/5000 -O GM12878_pyHICCUPS.5kb.bedpe \
                 --pw 1 2 4 --ww 3 5 7 --only-anchors --nproc 8 --clr-weight-name obj_weight --maxapart 4000000
@@ -119,7 +119,7 @@ To identify loops from the GM12878 Hi-C data, we used the following commands wit
 GM12878 Hi-C (Mustache)
 -----------------------
 Loops were also identified from the same GM12878 Hi-C dataset using Mustache v1.3.2
-(Supplementary Figure 14):
+(Supplementary Figure 14)::
 
     $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 5000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache.5kb.tsv
     $ mustache -f GM12878-MboI-allReps-hg38.mcool -r 10000 -pt 0.05 -norm obj_weight -p 8 -o GM12878_mustache.10kb.tsv
@@ -127,7 +127,7 @@ Loops were also identified from the same GM12878 Hi-C dataset using Mustache v1.
 
 mESC Hi-C (Figure 3)
 --------------------
-To identify loops from the mESC Hi-C data, we used pyHICCUPS v0.3.9 with the following commands:
+To identify loops from the mESC Hi-C data, we used pyHICCUPS v0.3.9 with the following commands::
 
     $ pyHICCUPS -p HIC-mESC-DpnII-allReps.10kb.cool -O HIC-mESC-hicpeaks.10kb.raichu.min1000.txt \
                 --pw 2 4 --ww 5 7 --maxww 7 --only-anchors --min-local-reads 1000 --min-marginal-peaks 3 \
@@ -140,7 +140,7 @@ To identify loops from the mESC Hi-C data, we used pyHICCUPS v0.3.9 with the fol
 
 mNPC and hNPC Hi-C (Figure 6)
 -----------------------------
-To identify loops from the mNPC Hi-C data, we used pyHICCUPS v0.3.9 with the following commands:
+To identify loops from the mNPC Hi-C data, we used pyHICCUPS v0.3.9 with the following commands::
 
     $ pyHICCUPS -p HIC-mNPC-DpnII-allReps.5kb.cool -O HIC-mNPC-hicpeaks.5kb.raichu.min300.txt \
                 --pw 1 2 4 --ww 3 5 7 --only-anchors --min-local-reads 300 --nproc 8 --clr-weight-name obj_weight \
@@ -155,7 +155,7 @@ The same parameters were applied to the hNPC Hi-C data.
 
 H1ESC Micro-C (Figure 7)
 ------------------------
-Loops from the H1ESC Micro-C data were identified using pyHICCUPS v0.3.9 as well:
+Loops from the H1ESC Micro-C data were identified using pyHICCUPS v0.3.9 as well::
 
     $ pyHICCUPS -p MicroC-H1ESC-MNase-allReps.10kb.cool -O H1ESC_MicroC_hicpeaks.10kb.raichu.min100.txt \
                 --pw 2 3 4 --ww 5 6 7 --maxww 7 --only-anchors --min-local-reads 100 --nproc 8 \
@@ -172,7 +172,7 @@ Loops from the H1ESC Micro-C data were identified using pyHICCUPS v0.3.9 as well
 
 mESC region-capture Micro-C (Figure 7)
 --------------------------------------
-First, we constructed a BED file defining the captured regions:
+First, we constructed a BED file defining the captured regions::
 
     $ cat capture-regions.bed
 
@@ -182,7 +182,7 @@ First, we constructed a BED file defining the captured regions:
     chr3    33804149        35704149
     chr6    122451959       122876959
 
-Bias vectors were then calculated only within the captured regions using Raichu:
+Bias vectors were then calculated only within the captured regions using Raichu::
 
     $ raichu --cool-uri GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/1000 \
              --window-size 800 --regions capture-regions.bed --ignore-diags 0 --lower-bound 0.001 \
@@ -194,7 +194,7 @@ Bias vectors were then calculated only within the captured regions using Raichu:
              --window-size 800 --regions capture-regions.bed --ignore-diags 0 --lower-bound 0.001 \
              --upper-bound 1000 -p 4 -n obj_weight -f --logFile RCMC_raichu.log
 
-Finally, loops within the captured regions were identified using pyHICCUPS v0.3.9:
+Finally, loops within the captured regions were identified using pyHICCUPS v0.3.9::
 
     $ pyHICCUPS -p GSM6281849_RCMC_BR1_merged_allCap_WT_mm39.merged.50.mcool::resolutions/1000 \
                 -O mESC_RCMC_hicpeaks.1kb.raichu.min100.txt --pw 2 3 4 --ww 5 6 7 --maxww 7 \
